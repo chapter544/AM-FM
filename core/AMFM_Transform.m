@@ -18,7 +18,7 @@ im = im - mean(im(:));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % ANALYSIS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-[bandFilterDft, loDft] = GenerateSteerablePyramid(size(im,1), size(im,2), numLevels, numOrien);
+[bandFilterDft, LoDft] = GenerateSteerablePyramid(size(im,1), size(im,2), numLevels, numOrien);
 
 chanResponseR = cell(numLevels, numOrien);
 chanResponseI = cell(numLevels, numOrien);
