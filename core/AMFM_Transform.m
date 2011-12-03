@@ -7,15 +7,15 @@
 %	numOrien: number of orientations for decomposition
 %
 %	Optional argument:
-%	params	: a vector containg 5 elements [noDC PHASE_CONST smoothing L sigma]
-%		noDC: 1 for withDCRing, 0 for without DC ring
-%		phaseUnwrapping: 1 for perform phase unwrapping, 0 for NO
-%		PHASE_CONSTANT: set to 300 for smoothness of the unwrapped phase
-%		smoothing = 1 for Y, 0 for N)
-%		L = width of smoothing window
-%		sigma = bandwidth of smoothing filter (variance of gaussian)
-%		
-%		default: [1 1 300 1 3  0.5]
+%	params	: 
+%
+%	trans_opts.withDCRing = 0; --> contain DC ring as part of residual
+%	trans_opts.phaseUnwrap = 1; --> 1 for phase unwrap, 0 for NO.
+%	trans_opts.PHASE_CONST = 300; --> scaling constant for smooth phase
+%	trans_opts.smoothDemodulation = 1; --> smoothing estimated FM functions.
+%	trans_opts.smoothWindow = 3; --> smoothing window
+%	trans_opts.smoothSigma = 0.5; --> smoothing sigma (Gaussian kernel)
+%	trans_opts.printParams = 0; --> print parameters (for debug)
 %	
 %return:
 %	A: AM function, in cell structure, i.e., A{1,1}, A{1,2}, A{3,1} ...
@@ -46,39 +46,50 @@ if(numLevels < 1)
 	error('numLevels has to be integer >= 1');
 end
 
-
 % default values
-trans_opts = [0 1 300 1 3 0.5];
 if( length(varargin) == 1 )
 	trans_opts = varargin{1};
 else
+	trans_opts.withDCRing = 0;
+	trans_opts.phaseUnwrap = 1;
+	trans_opts.PHASE_CONST = 300;
+	trans_opts.smoothDemodulation = 1;
+	trans_opts.smoothWindow = 3;
+	trans_opts.smoothSigma = 0.5;
+	trans_opts.printParams = 0;
+end
+
+% print trans_opts if selected
+if(trans_opts.printParams == 1)
 	fprintf('Performing AM-FM transform using default parameters:\n');
-	fprintf('-Exclude the low-frequency disk: %d\n',trans_opts(1));
+	fprintf('-Contains the low-frequency disk: %d\n',trans_opts.withDCRing);
 	fprintf('-Demodulation parameters: \n');
-	if(trans_opts(2) == 1) % phase unwrapping: YES, NO
+	if(trans_opts.phaseUnwrap == 1) % phase unwrapping: YES, NO
 		fprintf('\tPhase Unwrapping: YES\n');
-		fprintf('\tPHASE_CONST: %0.2f\n',trans_opts(3));
+		fprintf('\tPHASE_CONST: %0.2f\n',trans_opts.PHASE_CONST);
 	else
 		fprintf('\tPhase Unwrapping: NO');
 	end
-	fprintf('\tsmoothing: %d\n',trans_opts(4));
-	if(trans_opts(3) == 1) 
+	fprintf('\tsmoot demodulation: %d\n',trans_opts.smoothDemodulation);
+	if(trans_opts.smoothDemodulation == 1) 
 		fprintf('\tGaussian kernel\n');
-		fprintf('\twindow: %dx%d\n',trans_opts(5), trans_opts(5));
-		fprintf('\tsigma: %0.2f\n',trans_opts(6));
+		fprintf('\twindow: %dx%d\n',trans_opts.smoothWindow, ...
+			trans_opts.smoothWindow);
+		fprintf('\tsigma: %0.2f\n',trans_opts.smoothSigma);
 	end
 end
+
+
 
 % eliminate the DC portion
 imDC = mean(im_org(:));
 im = im_org - imDC;
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % ANALYSIS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 imDft = fftshift(fft2(im));
-if(trans_opts(1) == 1) % with DC Ring as residual
+if(trans_opts.withDCRing == 1) % with DC Ring as residual
 	[bandFilterDft, LoDft] = GenerateSteerablePyramid(...
 		size(im,1), size(im,2), numLevels, numOrien);
 
@@ -162,7 +173,7 @@ for levidx=1:numLevels,
 			U{levidx,orienidx}, V{levidx,orienidx}, ...
 			P{levidx,orienidx}, Pls{levidx,orienidx}] = ...
 			phaseUnwrap(chanResponseR{levidx,orienidx}, ... 
-				chanResponseI{levidx,orienidx}, trans_opts(2:end));
+				chanResponseI{levidx,orienidx}, trans_opts);
 	end
 end
 %------------------------------------------------------------------------%

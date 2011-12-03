@@ -12,8 +12,14 @@ tanalysis = tic;
 
 numLevels = 5;
 numOrien = 8;
-trans_opt = [0 1 300 1 3 0.5];
-[A U V P Pls Resi] = AMFM_Transform(im_org, numLevels, numOrien);
+trans_opt.withDCRing = 0;
+trans_opt.phaseUnwrap = 1;
+trans_opt.PHASE_CONST = 300;
+trans_opt.smoothDemodulation = 1;
+trans_opt.smoothWindow = 5;
+trans_opt.smoothSigma = 0.1;
+trans_opt.printParams = 0;
+[A U V P Pls Resi] = AMFM_Transform(im_org, numLevels, numOrien, trans_opt);
 
 anal_elapsed = toc(tanalysis); % elapsed time for analysis
 fprintf('*** Analysis time: %0.2f seconds.\n\n', anal_elapsed);
@@ -24,7 +30,7 @@ fprintf('-Perform reconstruction from the AM-FM model\n');
 recon = Resi;
 for levidx=1:numLevels,
 	for orienidx=1:numOrien
-		Precon = phaseReconLS(U{levidx,orienidx}, V{levidx,orienidx}, P{levidx,orienidx}(1,1), trans_opt(3));
+		Precon = phaseReconLS(U{levidx,orienidx}, V{levidx,orienidx}, P{levidx,orienidx}(1,1), trans_opt.PHASE_CONST);
 		recon = recon + A{levidx,orienidx} .* cos(Precon);
 	end
 end
@@ -35,3 +41,11 @@ fprintf('*** Synthesis time: %0.2f seconds.\n\n', syn_elapsed);
 [psnr, mse] = computePSNR(recon, im_org);
 fprintf('MSE: %0.10f\n', mse);
 fprintf('PSNR: %0.2f\n', psnr);
+
+
+% computing the dominant component using DCA
+dca_opts.useNeighbor = 0;
+dca_opts.window = 5;
+dca_opts.useWeightedAMFM = 0;
+dca_opts.K = numLevels;
+[dA dU dV dP dix] = DCAFromComponents(A, U, V, P, dca_opts);
