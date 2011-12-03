@@ -1,24 +1,18 @@
-function ShowFilterBank(M,N)
+% Generate "pseudo" frequency response of the steerable pyramid
+%
+% function [G] = ShowFilterBank(M,N, numLevel, numOrien)
+%
+%	G: G is the "pseudo" DFT of the steerable pyramid
+%
+function [G] =  ShowFilterBank(M,N, numLevel, numOrien)
+[bandFilterDft] = GenerateSteerablePyramidNoDC(M,N, numLevel, numOrien);
 
-numLev = 5;
-numOrien = 8; 
-[bandFilterDft] = GenerateSteerablePyramidNoDC(M,N, numLev, numOrien);
-
+G = zeros(M,N);
 out = zeros(M,N);
-for idx=1:numLev,
+for idx=1:numLevel,
 	for idx2=1:numOrien,
 		temp = abs(bandFilterDft{idx,idx2});
-		for i=1:M,
-			for j=1:N,
-				if(out(i,j) < temp(i,j))
-					%out(i,j) = out(i,j) + temp(i,j);	
-					out(i,j) = temp(i,j);	
-				end
-			end
-		end
+		G = max( G , temp );
 	end
 end
-
-image2file(out, 'float', 'steerablePyramid.float', 0);
-
-
+%image2file(out, 'float', 'steerablePyramid.float', 0);

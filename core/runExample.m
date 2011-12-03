@@ -2,76 +2,36 @@ clear all
 close all
 clc
 
-rootName = 'lena';
 M = 256;
 N = 256;
 
+%im_org = file2image2('float', M, N, sprintf('Images/%sR.float', rootName));
+im_org = generateChirp(M, N);
 
-im_org = file2image2('float', M, N, sprintf('Images/%sR.float', rootName));
+tanalysis = tic;
 
-noise = 0.0 .* randn(M,N);
-
-%im_org = imread('adelson.jpg');
-%im_org = rgb2gray(im_org);
-%im_org = double(im_org);
-%[M,N] = size(im_org);
-
-
-
-im_dc = mean(mean(im_org));
-im = im_org - im_dc;
-im = im + noise;
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% ANALYSIS
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 numLevels = 5;
 numOrien = 8;
-%[bandFilterDft, LoDft] = GenerateSteerablePyramid(M, N, numLevels, numOrien);
-[bandFilterDft] = GenerateSteerablePyramidNoDC(size(im,1), size(im,2), numLevels, numOrien);
+trans_opt = [0 1 300 1 3 0.5];
+[A U V P Pls Resi] = AMFM_Transform(im_org, numLevels, numOrien);
 
-chanResponseR = cell(numLevels, numOrien);
-chanResponseI = cell(numLevels, numOrien);
+anal_elapsed = toc(tanalysis); % elapsed time for analysis
+fprintf('*** Analysis time: %0.2f seconds.\n\n', anal_elapsed);
 
-% Perform filtering through steerable pyramid
-imDft = fftshift(fft2(im));
-out = zeros(size(im));
-for levidx = 1:numLevels,
-	for orienidx = 1:numOrien,
-		% Get the real part
-		outDft = imDft .* bandFilterDft{levidx,orienidx};		
-		chanResponseR{levidx,orienidx} = real(ifft2(ifftshift(outDft)));
-
-		% Construct the imaginary part with the partial Hilbert transform
-		H = GenerateDirectionalHilbertFilter(size(im,1), size(im,2), orienidx, numOrien);
-		outImagDft = -sqrt(-1) .* outDft .* H; 
-		chanResponseI{levidx,orienidx} = real(ifft2(ifftshift(outImagDft)));
-	end
-end
-%Lo = real(ifft2(ifftshift(LoDft.*imDft)));
-
-
-
-
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% DEMODUALTION
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-A = cell(numLevels,numOrien);
-U = cell(numLevels,numOrien);
-V = cell(numLevels,numOrien);
-P = cell(numLevels,numOrien);
-R = cell(numLevels,numOrien);
-T = cell(numLevels,numOrien);
-Pls = cell(numLevels,numOrien);
-unwrapOptions = [300 0 5 5 1 1];
+tsynthesis = tic;
+% reconstruct the image from AM-FM component
+fprintf('-Perform reconstruction from the AM-FM model\n');
+recon = Resi;
 for levidx=1:numLevels,
-	for orienidx=1:numOrien,
-		[A{levidx,orienidx}, ...
-			U{levidx,orienidx}, V{levidx,orienidx}, P{levidx,orienidx}] = ...
-			phaseUnwrap(chanResponseR{levidx,orienidx}, ... 
-							chanResponseI{levidx,orienidx}, unwrapOptions);
-
-		R{levidx,orienidx} = sqrt(U{levidx,orienidx}.^2 + V{levidx,orienidx}.^2);		
+	for orienidx=1:numOrien
+		Precon = phaseReconLS(U{levidx,orienidx}, V{levidx,orienidx}, P{levidx,orienidx}(1,1), trans_opt(3));
+		recon = recon + A{levidx,orienidx} .* cos(Precon);
 	end
 end
+syn_elapsed = toc(tsynthesis);
+fprintf('*** Synthesis time: %0.2f seconds.\n\n', syn_elapsed);
+
+% reconstruction error
+[psnr, mse] = computePSNR(recon, im_org);
+fprintf('MSE: %0.10f\n', mse);
+fprintf('PSNR: %0.2f\n', psnr);

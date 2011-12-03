@@ -13,14 +13,15 @@
 %	phase	: unwrapped phase function
 %
 % 	example:
-%		[A, U, V, P, Pls] = phaseUnwrap2(realImg, imagImg, PHASE_CONST, threshold)
+%		[A, U, V, P, Pls] = phaseUnwrapSmooth(realImg, imagImg, PHASE_CONST, threshold)
 %	NTC June 26, 2008
 %	NTC August 22, 2011
 %
-function [A, U, V, P, Pls] = phaseUnwrap2(realImg, imagImg, varargin)
+function [A, U, V, P, Pls] = phaseUnwrapSmooth(realImg, imagImg, varargin)
 
 % default variables
 PHASE_MULTIPLIER = 1;
+SmoothVariance = 0.001;
 A_THRESHOLD = 0.01;
 
 optargin = size(varargin,2);
@@ -28,9 +29,12 @@ if(optargin == 1)
 	PHASE_MULTIPLIER = varargin{1};
 elseif(optargin == 2)
 	PHASE_MULTIPLIER = varargin{1};
-	A_THRESHOLD = varargin{2};
+	SmoothVariance = varargin{2};
+elseif(optargin == 3)
+	PHASE_MULTIPLIER = varargin{1};
+	SmoothVariance = varargin{2};
+	A_THRESHOLD = varargin{3};
 end
-
 
 % Wrap phase
 wrapPhase = atan2(imagImg,realImg);
@@ -43,8 +47,8 @@ A = sqrt((realImg.*realImg + imagImg.*imagImg));
 %[realDev_H, realDev_V] = SplineGradient(realImg);
 %[imagDev_H, imagDev_V] = SplineGradient(imagImg);
 
-[realDev_H, realDev_V] = SmoothCubicSplineGradientApproximation(realImg);
-[imagDev_H, imagDev_V] = SmoothCubicSplineGradientAppriximation(imagImg);
+[realDev_H, realDev_V] = SmoothCubicSplineGradientApproximation(realImg, SmoothVariance);
+[imagDev_H, imagDev_V] = SmoothCubicSplineGradientApproximation(imagImg, SmoothVariance);
 
 % phase derivative (no unwrap phase needed).
 Asquare = A .* A + A_THRESHOLD;

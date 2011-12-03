@@ -1,3 +1,17 @@
+% Generate a set of wedge-like filters 
+%function [bandFilterDft] = Generate1LevelSteerableFilters(row, col, numOrien)
+%	inputs:
+%		row:	vertical dimension
+%		col:	horizontal dimension
+%		numOrien:	number of orientations 
+%
+%	output:
+%		bandFilterDft: a structure type contain DFT of each orientation, e.g.,
+%						bandFilterDft{1} --> first orientation
+%
+%	example: generate a set of 8 orientation filters
+%		[bandFilterDft] = Generate1LevelSteerableFilters(256, 256, 8);
+%
 function [bandFilterDft] = Generate1LevelSteerableFilters(row, col, numOrien)
 
 if nargin ~= 3 

@@ -1,3 +1,9 @@
+% Perform Dominant component analysis
+% Perform pixel-wise dominant component with maximizing criteria A*R
+%
+% function [domA domU domV domP] = DCA(im, numLevels, numOrien, varargin)
+%
+%
 function [domA domU domV domP] = DCA(im, numLevels, numOrien, varargin)
 
 if( nargin < 3 )
@@ -7,9 +13,8 @@ end
 
 % default values
 useNeighbor = 0; % use 3x3 neighbor to select dominant amplitude
-weightedAMFM = 0; % weighted AM with FM
 excludedLevels = 0; % exclude from computing DCA
-smoothingDemod = 0;
+weightedAMFM = 0; % weighted AM with FM
 
 if( length(varargin) == 1 )
 	useNeigbor = varargin{1};
@@ -26,13 +31,6 @@ if( length(varargin) == 3 )
 	weightedAMFM = varargin{3};
 end
 
-if( length(varargin) == 4 )
-	useNeigbor = varargin{1};
-	excludedLevels = varargin{2};
-	weightedAMFM = varargin{3};
-	smoothingDemod = varargin{4};
-end
-
 if(excludedLevels < 0 || excludedLevels >= numLevels)
 	warning('The number of excluded levels are out of range. Reset to 0');
 	excludedLevels = 0;
@@ -40,69 +38,17 @@ end
 numLevelsForDCA = numLevels - excludedLevels;
 
 
-
-
-[M N] = size(im);
-im = im - mean(im(:)); % eliminate DC component
-
-% Generate the Steerable Pyramid filters
-%[bandFilterDft, LoDft] = GenerateSteerablePyramid(M, N, numLevels, numOrien);
-[bandFilterDft] = GenerateSteerablePyramidNoDC(size(im,1), size(im,2), numLevels, numOrien);
-
-chanResponseR = cell(numLevels, numOrien);
-chanResponseI = cell(numLevels, numOrien);
-
-% Perform filtering through steerable pyramid
-imDft = fftshift(fft2(im));
-out = zeros(size(im));
-for levidx = 1:numLevels,
-	for orienidx = 1:numOrien,
-		% Get the real part
-		outDft = imDft .* bandFilterDft{levidx,orienidx};		
-		chanResponseR{levidx,orienidx} = real(ifft2(ifftshift(outDft)));
-
-		% Construct the imaginary part with the partial Hilbert transform
-		H = GenerateDirectionalHilbertFilter(size(im,1), size(im,2), orienidx, numOrien);
-		outImagDft = -sqrt(-1) .* outDft .* H; 
-		chanResponseI{levidx,orienidx} = real(ifft2(ifftshift(outImagDft)));
-	end
-end
-%Lo = real(ifft2(ifftshift(LoDft.*imDft)));
-
-
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% DEMODUALTION
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-A = cell(numLevels,numOrien);
-U = cell(numLevels,numOrien);
-V = cell(numLevels,numOrien);
-P = cell(numLevels,numOrien);
-%Pls = cell(numLevels,numOrien);
-%R = cell(numLevels,numOrien);
-%T = cell(numLevels,numOrien);
-if(smoothingDemod ~= 0)
-	smoothingDemod = 1;
-end
-unwrapOptions = [300 smoothingDemod 5 5 0.5];
-for levidx=1:numLevels,
-	for orienidx=1:numOrien,
-		[A{levidx,orienidx}, ...
-			U{levidx,orienidx}, V{levidx,orienidx}, P{levidx,orienidx}] = ...
-			phaseUnwrap(chanResponseR{levidx,orienidx}, ... 
-							chanResponseI{levidx,orienidx}, unwrapOptions);
-
-		%R{levidx,orienidx} = sqrt(U{levidx,orienidx}.^2 + V{levidx,orienidx}.^2);	
-		%T{levidx,orienidx} = atan2(V{levidx,orienidx}, U{levidx,orienidx});
-	end
-end
+% AM_FM transform
+trans_options = [1 300 1 3 0.5];
+[A U V P Pls Resi] = AMFM_Transform(im, numLevels, numOrien, trans_options);
 
 
 % DCA: select pixel-wise whose A is largest
-domA = zeros(M,N);
-domU = zeros(M,N);
-domV = zeros(M,N);
-domP = zeros(M,N);
+domA = zeros(size(im));
+domU = zeros(size(im));
+domV = zeros(size(im));
+domP = zeros(size(im));
+[M,N] = size(im);
 if(useNeighbor == 0) % use single pixel
 	for m=1:M,
 		for n=1:N,

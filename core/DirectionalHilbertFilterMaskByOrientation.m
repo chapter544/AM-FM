@@ -1,4 +1,10 @@
-function [H] = GenerateDirectionalHilbertFilter(row, col, orienidx, numOrien)
+% Generate a multiplication mask of the partial Hilbert transform
+% acting in the direction specified by the orientation provided
+% by the steerable pyramid filter axis
+% function [H] = DirectionalHilbertFilterMaskByOrientation(...
+%	row, col, orienidx, numOrien)
+function [H] = DirectionalHilbertFilterMaskByOrientation(...
+	row, col, orienidx, numOrien)
 
 dims = [row col];
 ctr = ceil((dims+0.5)/2);
@@ -27,4 +33,3 @@ G = pointOp(angle, Ycosn, interpOrg, Xcosn(2) - Xcosn(1));
 
 % Directional Hilbert Filter
 H = -sign(G);
-

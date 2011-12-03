@@ -18,7 +18,7 @@ function [dx, dy] = SmoothCubicSplineGradientApproximation(y, lamda)
 smoothVariance = sqrt(2*lamda);
 
 [M,N] = size(y);
-h = fspecial('gaussian', [5 5], smoothVariance)
+h = fspecial('gaussian', [5 5], smoothVariance);
 y_filt = imfilter(y, h, 'replicate');
 
 % Allocate memory for output image
