@@ -1,10 +1,10 @@
 % Generate Discrete Directional Partial Hilbert transform kernel spectrum mask
-% function [H] = GenerateDirectionalHilbertFilter2(row, col, alpha)
+% function [H] = GenerateDirectionalHilbertFilterMaskByAlpha(row, col, alpha)
 %
 % 	inputs:
 %			row: vertical dimension
 %			col: vertical dimension
-%			alpha: rotation angle interm of degree
+%			alpha: rotation angle interm of radiant
 %
 %	return:
 %			H: multiplication mask (either +1 or -1, or 0)
