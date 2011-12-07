@@ -101,6 +101,16 @@ else
 	Resi = imDC;
 end
 
+%for levidx=1:numLevels
+%	for orienidx=1:numOrien
+%		subplot(numLevels, numOrien, (numLevels-1)*numOrien + orienidx);
+%		imagesc(chanResponseR{levidx,orienidx});
+%		axis('image'); colormap(gray); axis off;
+%	end
+%end
+
+
+
 % Perform filtering through steerable pyramid
 chanResponseR = cell(numLevels, numOrien);
 chanResponseI = cell(numLevels, numOrien);
@@ -111,16 +121,17 @@ for levidx = 1:numLevels,
 		outDft = imDft .* bandFilterDft{levidx,orienidx};		
 		chanResponseR{levidx,orienidx} = real(ifft2(ifftshift(outDft)));
 
+
 		% Construct the imaginary part with the partial Hilbert transform
 		%H = DirectionalHilbertFilterMaskByOrientation(...
 		%	size(im,1), size(im,2), orienidx, numOrien);
-
 		alpha = (pi/(2*numOrien)) + (orienidx - 1) / numOrien * pi - pi/2;
 		H = GenerateDirectionalHilbertFilterMaskByAlpha(...
 			size(im,1), size(im,2), alpha);
 		outImagDft = -sqrt(-1) .* outDft .* H; 
 		chanResponseI{levidx,orienidx} = real(ifft2(ifftshift(outImagDft)));
 		
+		%axis('image'); colormap(gray); axis off;
 %		% create by alpha mask with adjusted points 
 %		alpha = (pi/(2*numOrien)) + (orienidx - 1) / numOrien * pi - pi/2;
 %		H2 = GenerateDirectionalHilbertFilterMaskByAlpha(...

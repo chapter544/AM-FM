@@ -31,6 +31,7 @@ else % Perform CubicSpline on columns
 		y(:,n) = (symExpFilt( x(:,n)', -2+sqrt(3), 6.0) )';
 	end
 end
+end % end ImageCubicSplineOnDirection
 
 
 
@@ -73,7 +74,4 @@ function y = symExpFilt( inData, pole, gain )
 	end
 
 	y = cMinus;
-	
-	end % end symExpFilt
-end % end ImageCubicSplineOnDirection
-
+end % end symExpFilt

@@ -12,14 +12,14 @@ tanalysis = tic;
 
 numLevels = 5;
 numOrien = 8;
-trans_opt.withDCRing = 0;
-trans_opt.phaseUnwrap = 1;
-trans_opt.PHASE_CONST = 300;
-trans_opt.smoothDemodulation = 1;
-trans_opt.smoothWindow = 5;
-trans_opt.smoothSigma = 0.1;
-trans_opt.printParams = 0;
-[A U V P Pls Resi] = AMFM_Transform(im_org, numLevels, numOrien, trans_opt);
+trans_opts.withDCRing = 0;
+trans_opts.phaseUnwrap = 1;
+trans_opts.PHASE_CONST = 300;
+trans_opts.smoothDemodulation = 1;
+trans_opts.smoothWindow = 5;
+trans_opts.smoothSigma = 0.1;
+trans_opts.printParams = 0;
+[A U V P Pls Resi] = AMFM_Transform(im_org, numLevels, numOrien, trans_opts);
 
 anal_elapsed = toc(tanalysis); % elapsed time for analysis
 fprintf('*** Analysis time: %0.2f seconds.\n\n', anal_elapsed);

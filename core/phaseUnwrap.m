@@ -56,7 +56,6 @@ if(demod_opts.printParams == 1)
 	end
 end
 
-
 % A and wrapPhase
 A = sqrt((realImg.*realImg + imagImg.*imagImg));
 
@@ -70,6 +69,7 @@ Asquare = A .* A;
 Asquare = Asquare + (Asquare < THRESHOLD) .* THRESHOLD;
 phaseDev_H = (imagDev_H.*realImg - realDev_H.*imagImg) ./ Asquare;
 phaseDev_V = (imagDev_V.*realImg - realDev_V.*imagImg) ./ Asquare;
+
 
 % Smoothing
 smoothingWindow = [demod_opts.smoothWindow demod_opts.smoothWindow];
