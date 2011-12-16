@@ -121,7 +121,6 @@ for levidx = 1:numLevels,
 		outDft = imDft .* bandFilterDft{levidx,orienidx};		
 		chanResponseR{levidx,orienidx} = real(ifft2(ifftshift(outDft)));
 
-
 		% Construct the imaginary part with the partial Hilbert transform
 		%H = DirectionalHilbertFilterMaskByOrientation(...
 		%	size(im,1), size(im,2), orienidx, numOrien);

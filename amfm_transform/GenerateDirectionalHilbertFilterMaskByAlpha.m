@@ -12,13 +12,11 @@
 function [H] = GenerateDirectionalHilbertFilterMaskByAlpha(row, col, alpha)
 
 H = zeros(row,col);
-halfRow = ceil( (row-1) / 2 );
-halfCol = ceil( (col-1) / 2 );
+halfRow = ceil( (row-1) / 2 ); % row --> y direction
+halfCol = ceil( (col-1) / 2 ); % col --> x direction
 
-
-%[mm,nn] = meshgrid(-halfRow:1:halfRow-1,-halfCol:1:halfCol-1);
-[mm,nn] = meshgrid(-halfCol:1:halfCol-1, -halfRow:1:halfRow-1);
-H = sign( mm*cos(alpha) + nn*sin(alpha) );
+[x,y] = meshgrid(-halfCol:1:(col-halfCol-1),-halfRow:1:(row-halfRow-1));
+H = sign( x*cos(alpha) + y*sin(alpha) );
 
 % fix up the DC part
 H(halfRow+1,halfCol+1) = 0.0;
