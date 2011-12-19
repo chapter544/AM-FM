@@ -1,0 +1,35 @@
+- inverse problem
+- denoising
+
++ manipulating wavelets coefficients: denoising
+[20, 35, 14, 34, 33, 37]
+
++ PDE 
+[44, 13, 4, 37, 40, 41]
+- 4 models
++ TV-L^2 (ROF) in [44] for denoising ( Du is the total variation of u)
+	inf ( int(Du) + lamba*||v|| in L^2 sense)
+	+ u is in BV class
+	+ v is in L^2
+
+	[44] Rudin, Osher, E. Fatemi
+		Nonlinera total variation based noise removal algorithm
+		Physica D, 1992
+
++ TV-G (Meyer) ([37] lecture series)
+	inf ( int(Du) + lamba * ||v|| in Banach space G contains signals
+		with large oscillations (contains noise and textures)
+
+
++ TV-L1 to replace ROF to use L1 (L1 is suited for salt and pepper noise).
+	refer to [2] as to cite IP paper Anliney_TV_IP97
+
+
++ TV-Hilbert [44], [42]
+	inf ( int(Du) + lamba * ||v|| in Hilbert space
+
+
+If texture and structure are not correlated --> suggestion to obtain lamba
+If not, select first local minimum.
+--> cite Aujol_TVGabor_IJCV06
+

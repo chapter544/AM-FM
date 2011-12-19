@@ -1,0 +1,53 @@
+
+figure(2);
+a = 481;
+b = 375;
+s = reshape(blah(a,b,:), 1, 5);
+s = s ./ max(s);
+plot([1:5], s);
+hold on;
+
+a = 160;
+b = 120;
+s = reshape(blah(a,b,:), 1, 5);
+s = s ./ max(s);
+plot([1:5], s, 'r');
+hold on;
+
+a = 124;
+b = 251;
+s = reshape(blah(a,b,:), 1, 5);
+s = s ./ max(s);
+plot([1:5], s, 'c');
+hold on;
+
+a = 42;
+b = 139;
+s = reshape(blah(a,b,:), 1, 5);
+s = s ./ max(s);
+plot([1:5], s, 'y');
+hold on;
+
+a = 158;
+b = 247;
+s = reshape(blah(a,b,:), 1, 5);
+s = s ./ max(s);
+plot([1:5], s, 'g');
+hold on;
+
+
+a = 106;
+b = 321;
+s = reshape(blah(a,b,:), 1, 5);
+s = s ./ max(s);
+plot([1:5], s, 'm');
+hold on;
+
+a = 163;
+b = 301;
+s = reshape(blah(a,b,:), 1, 5);
+s = s ./ max(s);
+plot([1:5], s, '-x');
+hold on;
+
+
