@@ -3,51 +3,51 @@ close all
 clc
 
 inImageDir = '/home/chuong/Images';
-outImageDir = '/home/chuong/Research/AMFM/experiments/runChristmas2011/2012_12_19';
+outImageDir = '/home/chuong/Research/AMFM/experiments/runChristmas2011/2012_01_05';
 M = 256;
 N = 256;
 
 % snake1R
 cartoonTextureDriver('snake1R', 'float', 256, 256,  inImageDir, outImageDir);
 
-% lena 256x256
-cartoonTextureDriver('lenaR', 'float', 256, 256,  inImageDir, outImageDir);
+% burlap 
+cartoonTextureDriver('burlapR', 'float', 256, 256,  inImageDir, outImageDir);
+
+% house 256x256
+cartoonTextureDriver('house', 'png', 0, 0,  inImageDir, outImageDir);
+
+% peppers 256x256
+cartoonTextureDriver('peppers256', 'png', 0, 0,  inImageDir, outImageDir);
 
 % lena 512x512 png
-cartoonTextureDriver('lena', 'png', 256, 256,  inImageDir, outImageDir);
+cartoonTextureDriver('lena', 'png', 0, 0,  inImageDir, outImageDir);
 
 % boat 512x512 png
-cartoonTextureDriver('boat', 'png', 256, 256,  inImageDir, outImageDir);
+cartoonTextureDriver('boat', 'png', 0, 0,  inImageDir, outImageDir);
 
-% fingerprint
-cartoonTextureDriver('fingerprint', 'png', 256, 256,  inImageDir, outImageDir);
+% fingerprint 512x512
+cartoonTextureDriver('fingerprint', 'png', 0, 0,  inImageDir, outImageDir);
 
-% house 
-cartoonTextureDriver('house', 'png', 256, 256,  inImageDir, outImageDir);
+% barbara 512x512
+cartoonTextureDriver('barbara', 'png', 0, 0,  inImageDir, outImageDir);
 
-% peppers 
-cartoonTextureDriver('peppers256', 'png', 256, 256,  inImageDir, outImageDir);
+% flinttones 512x512
+cartoonTextureDriver('flinstones', 'png', 0, 0,  inImageDir, outImageDir);
 
-% barbara
-cartoonTextureDriver('barbara', 'png', 256, 256,  inImageDir, outImageDir);
-
-% flinttones
-cartoonTextureDriver('flinstones', 'png', 256, 256,  inImageDir, outImageDir);
-
-% kodim01
-cartoonTextureDriver('kodim01', 'png', 256, 256,  inImageDir, outImageDir);
+% kodim01 768x512
+cartoonTextureDriver('kodim01', 'png', 0, 0,  inImageDir, outImageDir);
 
 % kodim05
-cartoonTextureDriver('kodim05', 'png', 256, 256,  inImageDir, outImageDir);
+cartoonTextureDriver('kodim05', 'png', 0, 0,  inImageDir, outImageDir);
 
 % kodim08
-cartoonTextureDriver('kodim08', 'png', 256, 256,  inImageDir, outImageDir);
+cartoonTextureDriver('kodim08', 'png', 0, 0,  inImageDir, outImageDir);
 
 % kodim17
-cartoonTextureDriver('kodim17', 'png', 256, 256,  inImageDir, outImageDir);
+cartoonTextureDriver('kodim17', 'png', 0, 0,  inImageDir, outImageDir);
 
 % kodim22
-cartoonTextureDriver('kodim22', 'png', 256, 256,  inImageDir, outImageDir);
+cartoonTextureDriver('kodim22', 'png', 0, 0,  inImageDir, outImageDir);
 
 % kodim23
-cartoonTextureDriver('kodim23', 'png', 256, 256,  inImageDir, outImageDir);
+cartoonTextureDriver('kodim23', 'png', 0, 0,  inImageDir, outImageDir);

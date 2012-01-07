@@ -36,10 +36,13 @@ if(dim == 1)
 	[r_cartoon, r_texture, r_gain] = cartoonTextureDecomposer(im);
 	r_texture_fs = FullScaleStretch(r_texture);
 	r_cartoon_fs = FullScaleStretch(r_cartoon);
+	r_gain_fs = FullScaleStretch(r_gain);
 	im_texture = cat(3, uint8(r_texture_fs), ...
 		uint8(r_texture_fs), uint8(r_texture_fs));
 	im_cartoon = cat(3, uint8(r_cartoon_fs), ...
 		uint8(r_cartoon_fs), uint8(r_cartoon_fs));
+	im_gain = cat(3, uint8(r_gain_fs), ...
+		uint8(r_gain_fs), uint8(r_gain_fs));
 
 	% write float type data to file
 	image2file(r_texture, 'float', sprintf('%s/%s_texture.float', ...
@@ -61,10 +64,16 @@ else
 	g_cartoon_fs = FullScaleStretch(g_cartoon);
 	b_cartoon_fs = FullScaleStretch(b_cartoon);
 
+	r_gain_fs = FullScaleStretch(r_gain);
+	g_gain_fs = FullScaleStretch(g_gain);
+	b_gain_fs = FullScaleStretch(b_gain);
+
 	im_texture = cat(3, uint8(r_texture_fs), ...
 		uint8(g_texture_fs), uint8(b_texture_fs));
 	im_cartoon = cat(3, uint8(r_cartoon_fs), ...
 		uint8(g_cartoon_fs), uint8(b_cartoon_fs));
+	im_gain = cat(3, uint8(r_gain_fs), ...
+		uint8(g_gain_fs), uint8(b_gain_fs));
 
 	% write to file
 	image2file(r_cartoon, 'float', sprintf('%s/%s_cartoon_R.float', ...
@@ -91,6 +100,7 @@ end
 
 imwrite(im_texture, sprintf('%s/%s_texture.png', outImageDir, rootName), 'png');
 imwrite(im_cartoon, sprintf('%s/%s_cartoon.png', outImageDir, rootName), 'png');
+imwrite(im_gain, sprintf('%s/%s_gain.png', outImageDir, rootName), 'png');
 
 fprintf('Execution time of %dx%dx%d is %f seconds\n\n',  ...
 	size(im,1), size(im,2), dim, toc(tstart));

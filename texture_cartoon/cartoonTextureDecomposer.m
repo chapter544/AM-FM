@@ -1,29 +1,21 @@
-% Cartoon Texture Decomposition
-% function [cartoon, texture, gain] = cartoonTextureDecomper(im)
-% inputs:
-%		im: 2-D image, limited to 1 channel for now
+% Decompose an image into texture + cartoon
+% function [cartoon, texture, gain] = cartoonTextureDecompoer
+%
+% input:
+%	im:	2D input image
 %
 % outputs:
-%		cartoon: cartoon component of image
-%		texture: texture component of image
-%		gain: the gain function [0,1], higher gain means texture  
+%	cartoon: 2D cartoon image
+%	texture: 2D texture image
+%	gain: gain mask with range [0,1]
 %
-% Chuong Nguyen
-%
+% NTC December 2011
 function [cartoon, texture, gain] = cartoonTextureDecomposer(im)
 
-
-if(nargin < 1)
-	error('Not enough parameter!');
-end
-
-% for now, just do 1 channel at a time (2011/12/18)
-if(size(im,3) > 1)
-	im = im(:,:,1);
-end
-
-% predefine a [3x3] smoothing window to fix NaN numbers
-h = fspecial('average', [3 3]);
+% default paramters
+% wL = 7 : smoothing window for gradient computation
+% THRESHOLD: 0.25 --> hardcoded THRESHOLD
+% standard trans_opts: with 5 levels and 6 orientations
 
 % convert precision to float
 im = single(im);
@@ -43,64 +35,92 @@ trans_opts.smoothSigma = 0.1;
 trans_opts.printParams = 0;
 [At Ut Vt Pt Ptls Resi] = AMFM_Transform(im, numLevels, numOrien, trans_opts);
 
-coeffR = zeros(size(im));
-A_total = zeros(size(im));
-L = numLevels-1;
-for levidx=1:L
-	AR_lev = zeros(size(im));
+
+% compute the estimation of image gradient
+dx = zeros(size(im));
+dy = zeros(size(im));
+dx_t = zeros(size(im));
+dy_t = zeros(size(im));
+for levidx=1:numLevels
+	dx_lev = zeros(size(im));
+	dy_lev = zeros(size(im));
 	for orienidx=1:numOrien
-		RR = sqrt(Ut{levidx,orienidx}.^2 + Vt{levidx,orienidx}.^2);
-		AR_lev = AR_lev + At{levidx,orienidx} .* RR;
-		A_total = A_total + At{levidx,orienidx};
+		dx_lev = dx_lev + Ut{levidx,orienidx} .* At{levidx,orienidx} .* sin(Pt{levidx,orienidx});
+		dy_lev = dy_lev + Vt{levidx,orienidx} .* At{levidx,orienidx} .* sin(Pt{levidx,orienidx});
 	end
-	coeffR(:,:,levidx) = AR_lev;
+
+	dx(:,:,levidx) = dx_lev;
+	dy(:,:,levidx) = dy_lev;
+	dx_t = dx_t + dx_lev;
+	dy_t = dy_t + dy_lev;
 end
 
-% normalize with A_total
-for levidx=1:L
-	coeffR(:,:,levidx) = coeffR(:,:,levidx) ./ A_total;
+
+% smoothing out the total gradient
+wL = 7;
+h = fspecial('gaussian', [wL wL], 3.0);
+totalGrad0 = sqrt(dx_t.^2 + dy_t.^2);
+totalGrad = imfilter(totalGrad0, h, 'replicate');
+
+% gradient estimation per level
+levGrad = zeros(size(im));
+for idx=1:numLevels
+	xx = zeros(size(im));
+	yy = zeros(size(im));
+	for levidx=idx:numLevels
+		xx = xx + dx(:,:,levidx);	
+		yy = yy + dy(:,:,levidx);	
+	end
+	r = sqrt(xx.^2 + yy.^2);
+	r_filt = imfilter(r, h, 'replicate');
+	levGrad(:,:,idx) = (totalGrad - r_filt) ./ totalGrad;
 end
 
 
-% compute variance
-outVar = var(coeffR, 1, 3);
-outVar(isnan(outVar)) = 0.0;
-
-
-% compute weighted mean for starting texture levels
-coeffRw = zeros(size(im));
-for levidx=1:L
-	coeffRw(:,:,levidx) = coeffR(:,:,levidx) .* levidx;
-end
-outMean = sum(coeffRw, 3) ./ sum(coeffR,3);
-outMean(isnan(outMean)) = 0.0;
-% smooth it out so that isnan is fixed
-filterChan  = imfilter(outMean, h, 'symmetric');
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% compute gain 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% estimate alpha using the Rayliegh distribution
-
-alpha = sqrt(0.5*pi) * sqrt(sum(sum(outVar.^2)) / (2*prod(size(outVar))));
-gain0 = exp( -max(alpha - outVar, 0.0) / (0.5*alpha) );
-% weight the e
-gain = imfilter(gain0, h, 'symmetric');
-
-% extracting texture and cartoon
-out = zeros(size(im));
+% get the masking level, the threshold is set to 0.25 hard
+THRESHOLD = 0.25;
+mask = zeros(size(im));
 for m=1:M
 	for n=1:N
-		chan = ceil(filterChan(m,n));
-		for levidx=1:chan
-			for orienidx=1:numOrien
-				out(m,n) = out(m,n) + ...
-					At{levidx,orienidx}(m,n) .* cos(Pt{levidx,orienidx}(m,n));
+		t = levGrad(m,n,1);
+		for levidx=1:numLevels
+			t = t + levGrad(m,n,levidx);
+			if(t > THRESHOLD)
+				mask(m,n) = levidx;
+				break;
 			end
 		end
 	end
 end
-texture = gain .* out;
+
+% the gain is computed by first finding the mask
+myChan = median(mask(:));
+gain = 0.0*(levGrad(:,:,myChan) < THRESHOLD) + 1.0 * (levGrad(:,:,myChan) >= THRESHOLD);
+gain = imfilter(gain, h, 'replicate');
+
+% compute the final textural output
+out = zeros(size(im));
+for m=1:M
+	for n=1:N
+		myChan = mask(m,n);
+		if(myChan >= numLevels)
+			myChan = -1;
+		end
+		for levidx=1:myChan
+			for orienidx=1:numOrien
+				out(m,n) = out(m,n) + At{levidx,orienidx}(m,n) .* cos(Pt{levidx,orienidx}(m,n));
+			end
+		end
+	end
+end
+texture = out .* gain;
 cartoon = im-texture;
-%showimage(texture, 'texture');
-%showimage(cartoon, 'cartoon');
+
+%subplot(2,2,1)
+%imagesc(im); axis('image'); axis off; colormap(gray(256));
+%subplot(2,2,2)
+%imagesc(gain); axis('image'); axis off; colormap(gray(256));
+%subplot(2,2,3)
+%imagesc(texture); axis('image'); axis off; colormap(gray(256));title('texture');
+%subplot(2,2,4)
+%imagesc(cartoon); axis('image'); axis off; colormap(gray(256));title('cartoon');
